@@ -59,4 +59,24 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     combined = "\n".join(dummy_results)
     telugu_summary = translator.translate(combined, dest='te').text
 
-    response = f"🔍 Results for: *{keyword}*\n\n{combined}\
+    response = f"🔍 Results for: *{keyword}*\n\n{combined}\n\n📘 **తెలుగు లో:**\n{telugu_summary}"
+    await update.message.reply_text(response, parse_mode="Markdown")
+
+    # Save history
+    history = load_history()
+    if user_id not in history:
+        history[user_id] = []
+    history[user_id].insert(0, keyword)
+    history[user_id] = history[user_id][:25]  # Keep last 25 only
+    save_history(history)
+
+# Main function
+def main():
+    app = ApplicationBuilder().token(BOT_TOKEN).build()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    print("Bot is running...")
+    app.run_polling()
+
+if __name__ == "__main__":
+    main()
